@@ -18,12 +18,26 @@ export default {
 			}
 		},
 		extend: {
+			backgroundImage: {
+				'gradient-primary': 'var(--gradient-primary)',
+				'gradient-warm': 'var(--gradient-warm)',
+			},
+			boxShadow: {
+				'chakra': 'var(--shadow-chakra)',
+				'warm': 'var(--shadow-warm)',
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
+				'root': {
+					primary: 'hsl(var(--root-primary))',
+					secondary: 'hsl(var(--root-secondary))',
+					accent: 'hsl(var(--root-accent))',
+					muted: 'hsl(var(--root-muted))',
+				},
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))'
