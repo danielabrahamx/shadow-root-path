@@ -65,7 +65,31 @@ const ChartContainer = React.forwardRef<
 })
 ChartContainer.displayName = "Chart"
 
+// Helper function to sanitize CSS values
+const sanitizeCSS = (value: string): string => {
+  // Remove potentially dangerous characters and ensure valid CSS
+  return value
+    .replace(/[<>'"]/g, '') // Remove HTML/JS injection chars
+    .replace(/javascript:|data:|vbscript:/gi, '') // Remove script protocols
+    .replace(/expression\s*\(/gi, '') // Remove CSS expressions
+    .trim()
+}
+
+// Helper function to validate color values
+const isValidColor = (color: string): boolean => {
+  if (!color || typeof color !== 'string') return false
+  
+  // Check for common color formats
+  const colorRegex = /^(#[0-9a-f]{3,8}|rgba?\([^)]+\)|hsla?\([^)]+\)|[a-z]+)$/i
+  return colorRegex.test(color.trim())
+}
+
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
+  // Validate input parameters
+  if (!id || typeof id !== 'string' || !config || typeof config !== 'object') {
+    return null
+  }
+
   const colorConfig = Object.entries(config).filter(
     ([_, config]) => config.theme || config.color
   )
@@ -74,28 +98,38 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null
   }
 
-  return (
-    <style
-      dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
-${colorConfig
-  .map(([key, itemConfig]) => {
-    const color =
-      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
-      itemConfig.color
-    return color ? `  --color-${key}: ${color};` : null
+  // Generate CSS safely without dangerouslySetInnerHTML
+  const cssRules = Object.entries(THEMES)
+    .map(([theme, prefix]) => {
+      const sanitizedId = sanitizeCSS(id)
+      const rules = colorConfig
+        .map(([key, itemConfig]) => {
+          const color =
+            itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
+            itemConfig.color
+          
+          if (!color || !isValidColor(color)) return null
+          
+          const sanitizedKey = sanitizeCSS(key)
+          const sanitizedColor = sanitizeCSS(color)
+          
+          return `  --color-${sanitizedKey}: ${sanitizedColor};`
+        })
+        .filter(Boolean)
+        .join('\n')
+
+      return rules ? `${prefix} [data-chart="${sanitizedId}"] {\n${rules}\n}` : ''
+    })
+    .filter(Boolean)
+    .join('\n')
+
+  // Create style element safely
+  const styleElement = React.createElement('style', {
+    key: `chart-style-${id}`,
+    children: cssRules
   })
-  .join("\n")}
-}
-`
-          )
-          .join("\n"),
-      }}
-    />
-  )
+
+  return styleElement
 }
 
 const ChartTooltip = RechartsPrimitive.Tooltip
