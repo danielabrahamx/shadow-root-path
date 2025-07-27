@@ -143,7 +143,7 @@ export interface GameResults {
   tips: string[];
 }
 
-export function calculateResults(choices: string[]): GameResults {
+export function calculateResults(choices: string[], chakraId: string = 'root'): GameResults {
   let score = 0;
   let overactiveCount = 0;
   let underactiveCount = 0;
@@ -171,13 +171,16 @@ export function calculateResults(choices: string[]): GameResults {
     balanceType = 'mixed';
   }
 
-  const insights = getInsights(balanceType);
-  const tips = getTips(balanceType);
+  const insights = getInsights(balanceType, chakraId);
+  const tips = getTips(balanceType, chakraId);
 
   return { balanceType, score, insights, tips };
 }
 
-function getInsights(type: BalanceType): string {
+function getInsights(type: BalanceType, chakraId: string = 'root'): string {
+  // Import here to avoid circular dependencies
+  const { getInsightsByChakra } = require('./chakraResults');
+  return getInsightsByChakra(chakraId, type) || (() => {
   switch (type) {
     case 'balanced':
       return "You demonstrate a healthy relationship with your Root Chakra. You understand that true security comes from within while taking practical steps to care for yourself. Your grounded nature allows you to navigate challenges with both wisdom and flexibility.";
@@ -190,9 +193,13 @@ function getInsights(type: BalanceType): string {
     default:
       return "Continue exploring your relationship with security and grounding.";
   }
+  })();
 }
 
-function getTips(type: BalanceType): string[] {
+function getTips(type: BalanceType, chakraId: string = 'root'): string[] {
+  // Import here to avoid circular dependencies
+  const { getTipsByChakra } = require('./chakraResults');
+  return getTipsByChakra(chakraId, type) || (() => {
   const baseTips = [
     "Practice daily grounding exercises like walking barefoot or sitting in nature",
     "Develop a consistent self-care routine that honors your basic needs",
@@ -230,4 +237,5 @@ function getTips(type: BalanceType): string[] {
     default:
       return baseTips;
   }
+  })();
 }
