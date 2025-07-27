@@ -1,3 +1,4 @@
+import { getInsightsByChakra, getTipsByChakra } from './chakraResults';
 export interface GameOption {
   label: string;
   type: 'balanced' | 'overactive' | 'underactive';
@@ -178,8 +179,6 @@ export function calculateResults(choices: string[], chakraId: string = 'root'): 
 }
 
 function getInsights(type: BalanceType, chakraId: string = 'root'): string {
-  // Import here to avoid circular dependencies
-  const { getInsightsByChakra } = require('./chakraResults');
   return getInsightsByChakra(chakraId, type) || (() => {
   switch (type) {
     case 'balanced':
@@ -197,8 +196,6 @@ function getInsights(type: BalanceType, chakraId: string = 'root'): string {
 }
 
 function getTips(type: BalanceType, chakraId: string = 'root'): string[] {
-  // Import here to avoid circular dependencies
-  const { getTipsByChakra } = require('./chakraResults');
   return getTipsByChakra(chakraId, type) || (() => {
   const baseTips = [
     "Practice daily grounding exercises like walking barefoot or sitting in nature",
